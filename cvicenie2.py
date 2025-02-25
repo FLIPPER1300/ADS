@@ -2,37 +2,35 @@ import numpy as np
 
 def find_optimal_route(cities, ideal_distance=440):
     K = len(cities)
-    dp = np.full(K, float('inf'))  # Minimálne penalizácie
-    prev = np.full(K, -1)  # Optimálne predchádzajúce zastávky
+    penalization = np.full(K, float('inf'))
+    prev = np.full(K, -1)
     
-    dp[0] = 0  # Začiatok cesty nemá penalizáciu
-    
-    for i in range(1, K):  # Pre každé mesto
-        for j in range(i):  # Skúmame všetky predchádzajúce možné zastávky
+    penalization[0] = 0
+
+    for i in range(1, K):
+        for j in range(i):
             distance = cities[i] - cities[j]
             penalty = (ideal_distance - distance) ** 2
-            
-            if dp[j] + penalty < dp[i]:
-                dp[i] = dp[j] + penalty
+            print("mesto",i,"spatne do",j,"penalizacia",penalty)
+
+            if penalization[j] + penalty < penalization[i]:
+                penalization[i] = penalization[j] + penalty
                 prev[i] = j
-    
-    # Rekonštrukcia optimálnej trasy
     route = []
     index = K - 1
     while index != -1:
-        route.append(index + 1)  # Indexy premeníme na poradie (číslovanie od 1)
+        route.append(index + 1)
         index = prev[index]
     
-    return dp[-1], list(reversed(route))
+    return penalization[-1], list(reversed(route))
 
-# Načítanie vstupného súboru
 def load_data(filename):
     with open(filename, 'r') as file:
         cities = list(map(int, file.readlines()))
     return cities
 
 
-filename = "Dat_21.txt"  # Zmeňte podľa potreby
+filename = "Dat_21.txt"
 cities = load_data(filename)
 min_penalty, optimal_route = find_optimal_route(cities)
 
