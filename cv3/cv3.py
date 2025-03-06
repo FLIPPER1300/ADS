@@ -1,5 +1,6 @@
 import math
 import itertools
+import numpy as np
 
 def read_coordinates(file_path):
     coordinates = []
@@ -22,34 +23,36 @@ def calculate_distances(coordinates):
                 distances[i][j] = math.sqrt((coordinates[i][0] - coordinates[j][0]) ** 2 + (coordinates[i][1] - coordinates[j][1]) ** 2)
     return distances
 
-def tsp_dynamic_programming(distances):
-    num_cities = len(distances)
-    all_sets = 1 << num_cities
-    dp = [[float('inf')] * num_cities for _ in range(all_sets)]
-    dp[1][0] = 0
+# Definujeme veľké číslo pre nekonečno
+INF = float('inf')
 
-    for subset_size in range(2, num_cities + 1):
-        for subset in itertools.combinations(range(1, num_cities), subset_size - 1):
-            bits = 1
-            for bit in subset:
-                bits |= 1 << bit
-            for k in subset:
-                prev_bits = bits & ~(1 << k)
-                for m in subset:
-                    if m == k:
-                        continue
-                    dp[bits][k] = min(dp[bits][k], dp[prev_bits][m] + distances[m][k])
+# Held-Karpov algoritmus
+def tsp_dp(distances):
+    n = len(distances)
+    dp = [[INF] * n for _ in range(1 << n)]
+    dp[1][0] = 0  # Začíname v meste A (index 0)
 
-    bits = (1 << num_cities) - 1
-    min_cost = float('inf')
-    for k in range(1, num_cities):
-        min_cost = min(min_cost, dp[bits][k] + distances[k][0])
+    for mask in range(1 << n):
+        for u in range(n):
+            if mask & (1 << u):
+                for v in range(n):
+                    if not (mask & (1 << v)) and distances[u][v] > 0:
+                        new_mask = mask | (1 << v)
+                        dp[new_mask][v] = min(dp[new_mask][v], dp[mask][u] + distances[u][v])
+
+    # Nájdeme najkratšiu cestu späť do mesta A
+    # Každý stav dp[mask][u] uchováva najkratšiu cestu pre danú kombináciu miest
+    min_cost = INF
+    for u in range(1, n):
+        if distances[u][0] > 0:
+            min_cost = min(min_cost, dp[(1 << n) - 1][u] + distances[u][0])
 
     return min_cost
 
-coordinates = read_coordinates('Test_13.txt')
+
+coordinates = read_coordinates('Test_23.txt')
 print(coordinates)
 distances = calculate_distances(coordinates)
 print(distances)
-min_cost = tsp_dynamic_programming(distances)
+min_cost = tsp_dp(distances)
 print(f"Minimum cost: {min_cost}")
