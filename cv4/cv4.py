@@ -10,14 +10,14 @@ def load_items(filename):
 
 
 def knapsack_3d(items, max_weight, max_volume):
-    dp = np.zeros((max_weight + 1, max_volume + 1), dtype=int)
+    backpack = np.zeros((max_weight + 1, max_volume + 1), dtype=int)
 
     for value, weight, volume in items:
         for w in range(max_weight, weight - 1, -1):
             for v in range(max_volume, volume - 1, -1):
-                dp[w][v] = max(dp[w][v], dp[w - weight][v - volume] + value)
+                backpack[w][v] = max(backpack[w][v], backpack[w - weight][v - volume] + value)
 
-    return dp[max_weight][max_volume]
+    return backpack[max_weight][max_volume]
 
 
 def main():
