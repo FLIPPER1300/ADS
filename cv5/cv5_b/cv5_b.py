@@ -1,6 +1,6 @@
 def lzw_compress(input_file):
     with open(input_file, 'r', encoding='ascii') as f:
-        data = f.read()
+        data = f.read().replace("\n", "")
 
     original_size = len(data)  # Počet bajtov v pôvodnom súbore
 
@@ -26,7 +26,7 @@ def lzw_compress(input_file):
     if prefix:
         compressed_data.append(dictionary[prefix])
 
-    compressed_size = len(compressed_data) * 2  # Kódovanie ako 16-bitové čísla
+    compressed_size = len(compressed_data)
 
     # Výpis výsledkov
     print(f"Pôvodná veľkosť: {original_size} bajtov")
