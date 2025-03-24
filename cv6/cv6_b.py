@@ -1,4 +1,6 @@
 import networkx as nx
+import matplotlib.pyplot as plt
+import math
 
 
 def load_graph(filename):
@@ -20,13 +22,11 @@ def greedy_station_placement(G):
     stations = set()
 
     while len(covered) < len(G.nodes):
-        # Vyberieme mesto s najviac nepokrytými susedmi
         best_city = max(G.nodes - covered, key=lambda city: len(set(G.neighbors(city)) - covered), default=None)
 
         if best_city is None:
             break
 
-        # Umiestnime stanicu
         stations.add(best_city)
         covered.add(best_city)
         covered.update(G.neighbors(best_city))
@@ -34,11 +34,35 @@ def greedy_station_placement(G):
     return stations
 
 
+def optimal_station_count(k, m):
+    if k == 4 and m >= 10:
+        return m
+    elif k == 6 and m >= 7:
+        return math.ceil((10 * m + 4) / 7)
+    elif 16 <= k <= m:
+        return math.ceil(((k + 2) * (m + 2)) / 5) - 4
+    else:
+        return k * m // 5  # Približný odhad pre iné hodnoty
+
+
 def compute_approximation_ratio(k, m):
     G = generate_grid_graph(k, m)
     stations = greedy_station_placement(G)
-    approx_ratio = len(stations) / (k * m / 5)
-    return len(stations), approx_ratio
+    opt_count = optimal_station_count(k, m)
+    approx_ratio = len(stations) / opt_count if opt_count > 0 else float('inf')
+    return G, stations, len(stations), opt_count, approx_ratio
+
+
+def draw_graph(G, stations):
+    pos = {node: (node[1], -node[0]) for node in G.nodes()}
+    plt.figure(figsize=(8, 8))
+
+    nx.draw(G, pos, with_labels=True, node_color='lightgray', edge_color='gray', node_size=500)
+    nx.draw_networkx_nodes(G, pos, nodelist=stations, node_color='red', node_size=600)
+
+    plt.title("Nabíjacie stanice v grafe")
+    plt.show()
+
 
 
 filename = "Stanice6.txt"
@@ -49,7 +73,11 @@ print(f"Počet miest s nabíjacími stanicami: {len(stations)}")
 print("Mestá s nabíjacími stanicami:", " ".join(map(str, stations)))
 
 # Testovanie na mriežkovom grafe
-k, m = 5, 5  # Príklad rozmerov
-num_stations, approx_ratio = compute_approximation_ratio(k, m)
+k, m = 6,7   # Príklad rozmerov
+grid_G, grid_stations, num_stations, opt_stations, approx_ratio = compute_approximation_ratio(k, m)
 print(f"Pre mriežkový graf {k}x{m} je počet staníc: {num_stations}")
+print(f"Optimálny počet staníc: {opt_stations}")
 print(f"Aproximačný pomer: {approx_ratio:.2f}")
+
+# Vykreslenie grafu
+draw_graph(grid_G, grid_stations)
